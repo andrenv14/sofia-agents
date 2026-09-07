@@ -1,9 +1,9 @@
 #!/bin/bash
 # Hook PreToolUse — pede confirmação para comandos de escrita em produção.
-# Por que existe: em 29/08 constatou-se que a lista "ask" do settings.json
-# não alcança subagentes rodando em modo Auto; um hook PreToolUse roda antes
-# de qualquer checagem de modo, então intercepta aqui (git push, pm2,
-# crontab, escrita via psql) mesmo quando o disparo vem de um subagente Auto.
+# Por que existe: a lista "ask" do settings.json não alcança subagentes rodando
+# em modo Auto — a escrita passa sem diálogo. Um hook PreToolUse roda antes de
+# qualquer checagem de modo, então intercepta aqui (git push, pm2, crontab,
+# escrita via psql) mesmo quando o disparo vem de um subagente Auto.
 # Contrato: só leitura, nunca modifica nada, SEMPRE sai com exit 0, e NUNCA
 # afrouxa permissão — em qualquer erro de parsing, não imprime nada (a
 # decisão fica com as listas normais de permissions).

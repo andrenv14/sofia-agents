@@ -4,8 +4,8 @@ Eu dirijo agentes de IA para escrever e operar um assistente de agendamento por
 WhatsApp que está em produção desde agosto de 2026, atendendo negócio real.
 
 Este repositório é o método: quem faz o quê, quem revisa quem, e as regras que
-toda sessão lê antes de tocar em qualquer coisa. Os arquivos aqui são os
-verdadeiros, em uso — não uma versão de demonstração.
+toda sessão lê antes de tocar em qualquer coisa. Os arquivos são os que estão em
+uso, com os detalhes internos do projeto removidos.
 
 **Irmãos:** [`sofia-vitrine`](https://github.com/andrenv14/sofia-vitrine), a
 arquitetura do produto · [`sofia-eval`](https://github.com/andrenv14/sofia-eval),
@@ -18,7 +18,6 @@ a avaliação de comportamento do modelo ·
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | as regras completas, que toda sessão lê na abertura |
 | [`.claude/`](.claude/) | os agentes, os hooks, a skill de deploy e as permissões |
-| [`uma-volta/`](uma-volta/) | uma tarefa real inteira: do plano ao parecer que liberou o merge |
 | [`memoria/`](memoria/) | o que um agente aprendeu entre execuções |
 | [`docs/`](docs/), [`ESTADO.md`](ESTADO.md), [`LOG.md`](LOG.md) | como o contexto é organizado |
 
@@ -67,8 +66,8 @@ O requisito é este: **existe uma segunda revisão, independente de quem
 implementou, que decide o merge e nunca implementa.** Qual modelo faz isso é
 detalhe.
 
-O que cumpre cada papel hoje (07/09/2026). "Esforço" é o controle de raciocínio
-do Claude Code:
+O que cumpre cada papel hoje. "Esforço" é o controle de raciocínio do Claude
+Code:
 
 | Papel | Modelo | Esforço |
 |---|---|---|
@@ -213,19 +212,33 @@ com mensagem própria em vez de abortar a sessão.**
 - [`protege-arquivos.sh`](.claude/hooks/protege-arquivos.sh) bloqueia edição de
   arquivo com segredo e de estado interno do git.
 
-## 7. Uma tarefa real, inteira
+## 7. Como uma revisão acontece
 
-[`uma-volta/`](uma-volta/) tem o material que circulou de verdade numa tarefa:
-o plano aprovado, o relato, e as quatro idas ao revisor independente com o que
-ele respondeu em cada uma. Três bloqueadores e um "apto a deploy".
+Quando uma tarefa fica pronta, ela não vai direto para a branch principal. O
+ciclo é sempre o mesmo.
 
-A tarefa pôs uma marca de autoria no histórico da conversa. Num modo em que a
-dona do negócio e a assistente respondem pelo mesmo número de WhatsApp, o
-sistema precisa saber de quem é cada linha antes de deixar a assistente
-confirmar um horário que ela não ofereceu.
+A sessão-guia monta um pacote e o entrega ao revisor independente: o diff
+completo, o plano aprovado, um relato do que mudou e do que ficou de fora, a
+spec da funcionalidade, e o resultado da suíte com o commit e o estado da cópia
+de trabalho no cabeçalho. O revisor lê as regras e a spec **antes** de olhar o
+diff, e revisa contra elas.
 
-É a melhor amostra do que o processo produz: os três bloqueadores foram texto
-afirmando o que o código não fazia, e nenhum foi lógica errada.
+O que volta é um parecer com achados, cada um com severidade e
+`arquivo:linha`, e uma última linha que é sempre uma de duas: **"apto a
+deploy"** ou o **bloqueador**. Não existe meio-termo, e quem decide o merge é
+ele, não quem implementou.
+
+Bloqueador devolve a tarefa para a sessão que a implementou, que corrige e
+manda a volta seguinte. O ciclo repete até o parecer sair apto. Enquanto a
+janela está aberta, nada que o revisor lê pode mudar — nem o relato, nem o
+plano, nem a branch principal — porque senão ele está revisando um estado que
+já não existe.
+
+**O que esse ciclo pega, na prática:** a maioria dos bloqueadores não é lógica
+errada. É comentário, mensagem de commit, plano ou relato afirmando o que o
+código não faz. O código costuma estar certo; o texto em volta dele é que
+promete a mais. Por isso o pipeline de filtros existe mesmo para tarefa
+pequena.
 
 ## 8. Escopo
 

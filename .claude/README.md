@@ -34,6 +34,6 @@ Duas regras que custaram para aprender, e que estão na constituição:
   reinicia, apaga, edita ou agenda, ele não é de leitura. Por isso
   `pm2 logs … --nostream` está em `allow` e `pm2 *` não.
 
-Este arquivo é reescrito pelo próprio harness em modo automático — em 02/09
-entraram permissões em duas máquinas no mesmo dia, sem ninguém editar. Conferir
+Este arquivo é reescrito pelo próprio harness quando a sessão roda em modo
+automático: permissões entram nele sem ninguém editar deliberadamente. Conferir
 `git status` dele antes de todo `git add` é parte da checklist de encerramento.

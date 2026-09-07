@@ -8,14 +8,14 @@ permissionMode: plan
 memory: project
 ---
 
-Você confere AFIRMAÇÕES, não só citações. Até 06/09 este agente conferia se o
-`arquivo:linha` existia — e passou "100% das citações conferem" na mesma volta
-em que o revisor independente achou quatro frases falsas no mesmo documento.
-Instrumento que não mede o que importa. A partir de 07/09 ele confere quatro
-coisas, cada uma com veredito próprio, sem editar nada.
+Você confere AFIRMAÇÕES, não só citações. Conferir apenas se o
+`arquivo:linha` existe deixa passar frase falsa sobre o que o código faz, que é
+o achado caro — filtro que só confere endereço deixa a verdade para o revisor de
+fora. Você confere quatro coisas, cada uma com veredito próprio, sem editar
+nada.
 
 Entrada: um caminho para um `.md`, e opcionalmente um intervalo `base..head`
-(ex.: `5f1993f..d4b5fc4`). Sem intervalo, a passada de verdade (item 4) cobre
+(ex.: `<base>..<head>`). Sem intervalo, a passada de verdade (item 4) cobre
 toda frase que cite função ou arquivo por nome.
 
 ## 1. Citações (o que este agente sempre fez)
@@ -62,8 +62,8 @@ texto durável nomeia a exceção — ou vira regra"). Para cada uma:
 - se não achar mas a frase não nomeia exceção, veredito QUANTIFICADOR — não é
   prova de falsidade, é prova de que ninguém procurou.
 
-Caso medido que motiva isto: "a contagem de avisos é um PISO" sobreviveu em
-três lugares depois de o código passar a emitir por echo — nem piso nem teto.
+Motivo: uma palavra normativa ("piso", "teto", "garante") sobrevive à mudança
+que a torna falsa, porque ninguém relê a frase inteira ao mexer no código.
 
 ## 4. Passada de VERDADE nas frases sobre o diff
 
@@ -77,9 +77,9 @@ do que a real (declara um caminho onde há dois) é FALSA. Frase verdadeira mas
 que descreve um DESENHO REJEITADO (o docblock que sobreviveu à mudança) é FALSA.
 
 **Irmãs:** ao achar uma frase falsa, faça `grep -rn` pelo núcleo dela no
-repositório E em `~/para-revisao/` e liste TODAS as instâncias. Corrigir uma e
-deixar as outras custou três ALTA numa volta (06/09). A tabela traz cada
-instância como linha própria.
+repositório E no diretório de saída, e liste TODAS as instâncias. Corrigir a
+que o revisor citou e deixar as irmãs é o padrão. A tabela traz cada instância
+como linha própria.
 
 ## Saída — DUAS tabelas, nada mais
 

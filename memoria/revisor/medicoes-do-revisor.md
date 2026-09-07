@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-Receita de medição que funcionou e não deixou resíduo (VPS, 07/09):
+Receita de medição que funciona e não deixa resíduo na cópia principal:
 
 - **Prova negativa:** `git worktree add --detach ~/pn-<fatia> main` a partir da
   worktree de revisão, `cp -al ~/sofia-bot/node_modules` (hardlink, mesmo

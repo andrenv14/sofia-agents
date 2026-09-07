@@ -9,13 +9,11 @@ abertura de toda sessão, então o que estiver escrito aqui é o que a próxima
 sessão vai acreditar.
 
 **PODA, e ela é parte do contrato deste arquivo:** o que já aconteceu sai daqui
-e vive no `LOG.md`. Em 06/09 a seção "Agora" tinha 462 linhas e 57 itens, quase
-todos de trabalho fechado uma semana antes — e um mesmo assunto aparecia TRÊS
-vezes com estados contraditórios ("PARADO", "DESTRAVADA", "PARADA"), porque
-nada nunca saía. Trabalho que entrou em produção vira uma linha aqui e o
-detalhe fica no diário. **Se este arquivo passar de ~120 linhas, ele parou de
-ser estado corrente** — e o número é normativo: só muda se alguém decidir
-mudá-lo.
+e vive no `LOG.md`. Sem poda o arquivo acumula trabalho fechado, e o mesmo
+assunto passa a aparecer em vários pontos com estados contraditórios, porque
+nada nunca sai. Trabalho que entrou em produção vira uma linha aqui, e o detalhe
+fica no diário. **Se este arquivo passar de ~120 linhas, ele parou de ser estado
+corrente.** O número é normativo: só muda se alguém decidir mudá-lo.
 
 ## Agora
 

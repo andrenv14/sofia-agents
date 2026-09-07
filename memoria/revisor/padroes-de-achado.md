@@ -8,29 +8,26 @@ metadata:
 Nas revisões desta base, o código quase sempre está certo; **o bloqueador nasce
 no texto que acompanha o código e na afirmação de raio de alcance**.
 
-**Why:** medido na `prompt-condicional` (07/09, primeira revisão minha): 8 dos 9
-achados eram comentário/commit/teste afirmando o que o código não faz, e os dois
-ALTA eram (a) mudança de default do core motivada pelo extra de UM tenant,
-atingindo outro tenant em produção, e (b) a única frase de raio de alcance do
-commit medindo o tenant errado. Nenhum achado era de lógica. Isso casa com o
-histórico que o `AGENTS.md` registra das fatias `coex-commit2`, `audio-transcrito`,
-`log-waba` e `fala-do-dono-completa`.
+**Why:** a maioria dos achados é comentário, mensagem de commit ou teste
+afirmando o que o código não faz. Os graves costumam ser dois: mudança de padrão
+do núcleo motivada pela necessidade de um cliente só, atingindo outro em
+produção; e a frase de raio de alcance do commit medindo o alvo errado. Achado
+de lógica é a minoria.
 
 **How to apply:** em toda revisão, rodar estas duas medições ANTES de olhar a
 lógica linha a linha, porque são as que produzem os achados caros:
 
 1. **Rederivar o raio de alcance por dado, não por texto.** Quantos tenants
-   existem, quais estão `active`, e o que cada um tem (produtos, profissionais,
-   token de Pix, `coexistencia`) muda sem aviso e é o que decide quem sente o
-   diff. `psql -d sofia_bot` com contagens e `IS NOT NULL` (nunca o valor de
-   segredo, nunca `system_prompt_extra`). Frase de commit que diz "para o cliente
-   X nada muda" é premissa até ser medida — e já nasceu falsa uma vez, apontando
-   para um tenant inativo com nome parecido.
+   existem, quais estão ativos, e o que cada um tem configurado muda sem aviso
+   e é o que decide quem sente o diff. Consultar o banco com contagens e
+   `IS NOT NULL`, nunca o valor de segredo nem o prompt do cliente. Frase de
+   commit que diz "para o cliente X nada muda" é premissa até ser medida: nome
+   parecido entre um cliente ativo e um inativo faz a frase nascer falsa.
 2. **Montar o artefato real nos dois lados do diff** (worktree temporária em
    `main` + `cp -al` do `node_modules`, remover no fim). Serve para a prova
-   negativa E para conferir número medido citado no commit. Foi assim que
-   apareceu que o "antes" de uma medição não se reproduzia e que um fixture
-   byte-a-byte tinha perdido um bloco em silêncio.
+   negativa E para conferir número citado no commit. É o que revela um "antes"
+   que não se reproduz, e um fixture byte a byte que perdeu um bloco em
+   silêncio.
 
 **Armadilha específica desta base:** fixture congelado (`tests/fixtures/`) perde
 cobertura sem ninguém notar quando o código passa a condicionar uma seção a um

@@ -21,7 +21,7 @@ Todo arquivo `.md` do repositório: raiz, `docs/**`, `.claude/**`.
   e compare.
 - "espelho manual" descrito como presente.
 - "ChatGPT" citado como revisor (o revisor padrão é Codex).
-- Módulo removido em 30/08 descrito como se ainda existisse no código.
+- Módulo já removido descrito como se ainda existisse no código.
 - "Sonnet default" (o padrão do sistema é `anthropic/claude-haiku-4.5`,
   configurável por tenant).
 - Arquivos citados que não existem — confira com `ls`/`Glob`.

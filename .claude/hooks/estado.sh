@@ -2,12 +2,11 @@
 #
 # estado.sh — estado de abertura de sessão, entregue pelo hook SessionStart.
 #
-# POR QUE ISTO EXISTE: em 28 e 29/08, QUATRO prompts de sessão foram escritos
-# com estado desatualizado — branch errada em checkout (duas vezes), LOG fora
-# da ordem de encerramento, e "branch pushada" afirmado quando o remoto estava
-# três commits atrás. O AGENTS.md já mandava verificar antes de propor; o que
-# faltava não era a regra, era o estado CHEGAR ao contexto sem depender de
-# alguém lembrar de buscá-lo. Este script faz o harness entregar o estado na
+# POR QUE ISTO EXISTE: prompt de sessão escrito com estado desatualizado faz a
+# sessão trabalhar contra um mundo que não existe — branch errada em checkout,
+# "branch pushada" afirmado com o remoto atrás. A regra de verificar antes de
+# propor já existia; o que faltava era o estado CHEGAR ao contexto sem depender
+# de alguém lembrar de buscá-lo. Este script faz o harness entregar o estado na
 # abertura de toda sessão.
 #
 # CONTRATO: somente leitura, saída curta, NENHUM segredo (não lê .env, não
