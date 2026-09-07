@@ -95,17 +95,15 @@ Um agente só é confiável se o que ele acredita sobre o mundo estiver certo
 quando a sessão abre, e se o que ele precisa ler couber.
 
 ```mermaid
-flowchart TB
-    ABRE(["sessão abre"]) --> HOOK["hook de abertura roda"]
-    HOOK --> EST["máquina, branch, divergência do remoto,<br/>cópia de trabalho suja?, processos, banco"]
-    HOOK --> AGORA["a seção 'Agora' do estado corrente"]
-    EST --> SESSAO["a sessão já sabe onde está"]
+flowchart LR
+    ABRE(["sessão abre"]) --> HOOK["hook de abertura"]
+    COMPACTA(["contexto compactado"]) --> HOOK
+    HOOK --> ONDE["máquina, branch,<br/>divergência com o remoto"]
+    HOOK --> SUJO["cópia de trabalho suja?<br/>processos, banco"]
+    HOOK --> AGORA["o estado corrente"]
+    ONDE --> SESSAO(["a sessão sabe onde está"])
+    SUJO --> SESSAO
     AGORA --> SESSAO
-    COMPACTA(["contexto foi compactado"]) --> AGORA
-    SESSAO --> LE{"precisa de quê?"}
-    LE -->|"o que fazer em seguida"| FILA["docs/contexto/"]
-    LE -->|"o que já foi feito"| LOG["LOG.md"]
-    LE -->|"contra o que revisar"| SPEC["docs/features/ e docs/plans/"]
 ```
 
 **A abertura não depende de ninguém lembrar.** O hook
@@ -116,6 +114,18 @@ justamente o momento em que a sessão mais esquece.
 
 **Cada arquivo declara o que vai nele e o que não vai**, com ponteiro para o
 irmão certo. É o que permite ler um arquivo em vez de cinco:
+
+```mermaid
+flowchart TB
+    P{"a sessão precisa de quê?"}
+    P -->|"onde o projeto está agora"| EST["ESTADO.md"]
+    P -->|"o que já foi feito"| LOG["LOG.md"]
+    P -->|"o que fazer em seguida"| FILA["docs/contexto/"]
+    P -->|"contra o que revisar"| SPEC["docs/features/<br/>docs/plans/"]
+    EST -.->|"o que já aconteceu<br/>sai daqui"| LOG
+    FILA -.->|"item fechado<br/>sai da fila"| CONC["docs/contexto/<br/>fila-concluido.md"]
+```
+
 
 - [`ESTADO.md`](ESTADO.md) é o estado corrente, e só ele. Tem teto de tamanho:
   passou disso, deixou de ser estado e virou diário.
@@ -216,6 +226,17 @@ com mensagem própria em vez de abortar a sessão.**
 
 Quando uma tarefa fica pronta, ela não vai direto para a branch principal. O
 ciclo é sempre o mesmo.
+
+```mermaid
+flowchart TB
+    PRONTA(["tarefa pronta"]) --> PACOTE["a guia monta o pacote:<br/>diff, plano, relato, spec, suíte medida"]
+    PACOTE --> LE["o revisor lê as regras e a spec<br/>ANTES do diff"]
+    LE --> PARECER{"parecer"}
+    PARECER -->|"bloqueador"| VOLTA["volta para quem implementou"]
+    VOLTA --> PACOTE
+    PARECER -->|"apto a deploy"| MERGE(["merge e deploy"])
+```
+
 
 A sessão-guia monta um pacote e o entrega ao revisor independente: o diff
 completo, o plano aprovado, um relato do que mudou e do que ficou de fora, a
