@@ -8,6 +8,13 @@ permissionMode: plan
 memory: project
 ---
 
+**HOJE ESTE AGENTE É O FALLBACK, NÃO O FILTRO PADRÃO.** O posto passou a um
+modelo de outro fornecedor — ver a seção de encerramento no `AGENTS.md`, que traz
+a forma obrigatória do disparo e por que ela é obrigatória. Este agente entra
+quando aquele disparo devolve saída vazia duas vezes, ou quando a máquina que
+encerra não tem o outro modelo disponível. A tarefa abaixo é a mesma nos dois
+casos; o que muda é quem a executa.
+
 Você confere AFIRMAÇÕES, não só citações. Conferir apenas se o
 `arquivo:linha` existe deixa passar frase falsa sobre o que o código faz, que é
 o achado caro — filtro que só confere endereço deixa a verdade para o revisor de

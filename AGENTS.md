@@ -253,11 +253,26 @@ abaixo existem porque texto errado sobre o código é pior que texto nenhum: ele
 
 ### Encerramento de tarefa
 
-- **Encerramento padrão, em sequência:** `revisor` → `conferidor-de-citacoes` →
-  revisão automática → `prova-negativa` (obrigatória quando a tarefa corrige
-  bug) → revisor independente, que decide o merge. Cada filtro roda sobre o
-  código já corrigido pelos achados do anterior. Documentação pura dispensa o
-  pipeline.
+- **Encerramento padrão, em sequência:** `revisor` → **conferidor, hoje num
+  modelo de outro fornecedor** → revisão automática → `prova-negativa`
+  (obrigatória quando a tarefa corrige bug) → revisor independente, que decide o
+  merge. Cada filtro roda sobre o código já corrigido pelos achados do anterior.
+  Documentação pura dispensa o pipeline.
+- **Por que o conferidor mudou de fornecedor, e a razão não é preço.** Duas
+  coisas só são duas fontes se puderem DISCORDAR — um conferidor do mesmo modelo
+  que escreveu o texto compartilha o ponto cego de quem escreveu. Medido antes de
+  adotar: sobre um alvo com defeitos conhecidos, o modelo novo achou os dois em
+  cinco de cinco rodadas, com zero falso positivo, e ainda apontou três
+  afirmações falsas que o revisor independente não pegara no mesmo arquivo. Em
+  uso real, achou um quantificador que envelheceu ENTRE uma volta e a seguinte —
+  defeito que nenhum filtro anterior poderia ter pego, porque nasceu depois deles.
+- **A forma do disparo é obrigatória, e cada exigência veio de uma falha.** O
+  prompt entrega o inventário de arquivos e avisa que o shell está indisponível
+  (sem isso a rodada volta vazia, medido); a validação é pelo CONTEÚDO da saída,
+  nunca pelo código de retorno nem pelo campo de status, porque a rodada vazia
+  sai com sucesso nos dois; e há fallback declarado para o agente interno quando
+  a saída vem vazia duas vezes — sem ele, uma tarefa passa sem conferidor nenhum
+  e ninguém nota.
 - **Os filtros rodam em sequência, nunca em paralelo.** Eles compartilham a
   cópia de trabalho, o banco de teste e a porta do servidor.
 - **O pipeline é cobertura, não só serialização.** O que ele cobre não é o

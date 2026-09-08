@@ -32,7 +32,7 @@ flowchart TB
     end
     subgraph PROD["Produção"]
         GUIA["sessão-guia:<br/>orquestra, mede, publica"]
-        FILTROS["filtros em sequência:<br/>revisor, conferidor, prova negativa"]
+        FILTROS["filtros em sequência:<br/>revisor, conferidor (outro fornecedor),<br/>prova negativa"]
         CODEX["revisor independente<br/>(outro modelo, outro fornecedor)"]
     end
     FATIA --> SUITE
@@ -74,7 +74,14 @@ Code:
 | Implementação | Opus 5 | xhigh |
 | Tarefa mecânica: merge, deploy, edição já decidida | Sonnet 5 | alto |
 | Decisão: arquitetura, spec, bug que não reproduz | Fable 5.1 | máximo |
-| Revisão independente | `gpt-5.6-sol` | xhigh |
+| Conferência de afirmações contra o código | `gemini-3.8-flash-high` | alto (no id) |
+| Revisão independente, que decide o merge | `gpt-5.6-sol` | xhigh |
+
+Modelo se declara por **id exato**, e a linha do Gemini mostra por quê: o esforço
+faz parte do identificador, então "Gemini 3.8 Flash" não nomeia um modelo —
+nomeia três. Todo id aqui é o da data em que este texto foi escrito, e se
+rederiva da configuração da máquina em vez de se copiar daqui: em dois dias esse
+conjunto mudou três vezes.
 
 As escolhas seguem uma medição simples: em código de longo horizonte, baixar o
 esforço custa qualidade de forma acentuada; em tarefa com roteiro pronto,
@@ -201,7 +208,7 @@ alguém precisava fazer e não conseguia fazer bem sozinho.
 | Agente | O que faz | O que nunca faz | Esforço |
 |---|---|---|---|
 | [`revisor`](.claude/agents/revisor.md) | revisa um diff que outra sessão implementou, contra a spec e as regras | editar; decidir merge | xhigh |
-| [`conferidor-de-citacoes`](.claude/agents/conferidor-de-citacoes.md) | confere o que um documento afirma contra o repositório: citações, contagens, quantificadores | avaliar qualidade de código | alto |
+| [`conferidor-de-citacoes`](.claude/agents/conferidor-de-citacoes.md) | confere o que um documento afirma contra o repositório: citações, contagens, quantificadores. **Hoje é o fallback**: esse posto passou a um modelo de outro fornecedor | avaliar qualidade de código | alto |
 | [`prova-negativa`](.claude/agents/prova-negativa.md) | roda os testes novos contra o código anterior à correção, para provar que falham | tocar a cópia de trabalho principal | alto |
 | [`auditor-vps`](.claude/agents/auditor-vps.md) | auditoria de leitura da infraestrutura | `sudo`; escrever; propor comando de escrita | médio |
 | [`auditor-de-docs`](.claude/agents/auditor-de-docs.md) | classifica cada documento em vivo, desatualizado, morto ou duplicado | editar; sugerir edição pronta | médio |
