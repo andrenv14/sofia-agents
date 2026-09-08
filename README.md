@@ -74,14 +74,16 @@ Code:
 | Implementação | Opus 5 | xhigh |
 | Tarefa mecânica: merge, deploy, edição já decidida | Sonnet 5 | alto |
 | Decisão: arquitetura, spec, bug que não reproduz | Fable 5.1 | máximo |
-| Conferência de afirmações contra o código | `gemini-3.8-flash-high` | alto (no id) |
+| Conferência de afirmações contra o código | `gemini-3.8-flash-high` | alto — **sempre** |
 | Revisão independente, que decide o merge | `gpt-5.6-sol` | xhigh |
 
-Modelo se declara por **id exato**, e a linha do Gemini mostra por quê: o esforço
-faz parte do identificador, então "Gemini 3.8 Flash" não nomeia um modelo —
-nomeia três. Todo id aqui é o da data em que este texto foi escrito, e se
-rederiva da configuração da máquina em vez de se copiar daqui: em dois dias esse
-conjunto mudou três vezes.
+Modelo se declara por **id exato**, e a linha do Gemini mostra por quê: nesse
+modelo **o esforço faz parte do identificador**, então "Gemini 3.8 Flash" não
+nomeia um modelo — nomeia três, um por nível de esforço. Aqui ele roda **sempre
+em alto**, e isso é regra, não observação: só muda se alguém decidir mudá-la.
+Todo id nesta tabela é o da data em que o texto foi escrito, e se rederiva da
+configuração da máquina em vez de se copiar daqui — em dois dias esse conjunto
+mudou três vezes.
 
 As escolhas seguem uma medição simples: em código de longo horizonte, baixar o
 esforço custa qualidade de forma acentuada; em tarefa com roteiro pronto,
