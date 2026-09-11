@@ -1,6 +1,6 @@
 ---
 name: leitor-de-logs
-description: Lê os logs de produção da VPS (PM2 e crons) e devolve só anomalias — erros repetidos, gaps de cron, alertas falhados, restarts, linhas sem data. Nunca imprime telefone nem conteúdo de mensagem. Use para checagem periódica de saúde operacional.
+description: Lê os logs de produção de produção (PM2 e crons) e devolve só anomalias — erros repetidos, gaps de cron, alertas falhados, restarts, linhas sem data. Nunca imprime telefone nem conteúdo de mensagem. Use para checagem periódica de saúde operacional.
 tools: Bash, Read
 model: sonnet
 effort: medium
@@ -13,7 +13,7 @@ nem conteúdo de mensagem de cliente — cite classe de erro, contagem e
 horário, nunca o dado pessoal em si.
 
 ## O que ler
-- `pm2 logs sofia-bot --lines 500 --nostream`
+- `pm2 logs <processo> --lines 500 --nostream`
 - `~/lembretes.log`
 - `~/posconsulta.log`
 - `~/varrer-orfas.log`

@@ -6,15 +6,21 @@ edição.
 - [`agents/`](agents/) — um arquivo por papel. O frontmatter declara as
   ferramentas, o modelo e o esforço de cada um; o corpo diz o que ele faz, o
   que **nunca** faz, e como devolve o resultado.
-- [`hooks/`](hooks/) — três scripts. O cabeçalho de cada um diz por que ele
-  existe, com o incidente e a data, e declara o contrato: só leitura, nunca
+- [`hooks/`](hooks/) — sete scripts. O cabeçalho de cada um diz por que ele
+  existe, com o incidente que o gerou, e declara o contrato: só leitura, nunca
   afrouxa permissão, degrada com mensagem própria em vez de abortar a sessão.
-- [`skills/deploy/SKILL.md`](skills/deploy/SKILL.md) — a sequência de deploy.
-  Cresceu por achado: cada passo novo tem ao lado a revisão que o exigiu.
+  **Três deles BLOQUEIAM** (saem com código 2, que o harness não ignora):
+  edição de arquivo com segredo, reinício do processo de produção com a cópia de
+  trabalho suja, e `git add` que leve um arquivo de permissão alterado sem
+  nomeá-lo. Os outros informam ou pedem confirmação.
+- [`skills/`](skills/) — quatro procedimentos, carregados sob gatilho declarado:
+  `deploy`, `revisao-externa`, `encerrar-ciclo` e `tunel-wsl`. A diferença para
+  um hook é que **skill pode ser ignorada e hook não** — por isso procedimento
+  vira skill, e regra que precisa valer sempre vira hook.
 - [`settings.json`](settings.json) — os hooks, o `plansDirectory` e as três
   listas de permissão (`allow`, `ask`, `deny`).
 
-**Exceção declarada:** as subpastas `agents/`, `hooks/` e `skills/deploy/` não
+**Exceção declarada:** as subpastas `agents/`, `hooks/` e `skills/*/` não
 têm `README.md` próprio, e é de propósito — o harness lê **todo** `.md` de
 `agents/` como definição de agente, e um README ali viraria um agente sem
 frontmatter. Elas são documentadas por esta página.

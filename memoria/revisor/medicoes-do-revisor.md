@@ -8,7 +8,7 @@ metadata:
 Receita de medição que funciona e não deixa resíduo na cópia principal:
 
 - **Prova negativa:** `git worktree add --detach ~/pn-<fatia> main` a partir da
-  worktree de revisão, `cp -al ~/sofia-bot/node_modules` (hardlink, mesmo
+  worktree de revisão, `cp -al <raiz>/node_modules` (hardlink, mesmo
   filesystem), copiar POR CIMA o arquivo de teste da branch e rodar só ele com
   `npx vitest run <arquivo>`. No fim: `git worktree remove --force` e conferir
   `git status` da principal. `rm -rf` é negado para subagente — o
@@ -21,7 +21,7 @@ Receita de medição que funciona e não deixa resíduo na cópia principal:
 atribuição do número ao commit só existe se o log carregar SHA + árvore limpa.
 
 **How to apply:** rodar antes de escrever qualquer severidade, e nunca em
-paralelo com outro filtro (disputam `sofia_test` e a porta 3000).
+paralelo com outro filtro (disputam `<banco de teste>` e a porta 3000).
 
 **Cuidado que me pegou na prática:** `pgrep -f "[v]itest" || echo "nenhum vitest
 rodando"` dá positivo em si mesmo — não pelo padrão, mas porque a PALAVRA está na

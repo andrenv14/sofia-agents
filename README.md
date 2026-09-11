@@ -16,8 +16,10 @@ a avaliação de comportamento do modelo ·
 
 | Onde | O que é |
 |---|---|
-| [`AGENTS.md`](AGENTS.md) | as regras completas, que toda sessão lê na abertura |
-| [`.claude/`](.claude/) | os agentes, os hooks, a skill de deploy e as permissões |
+| [`AGENTS.md`](AGENTS.md) | as regras, que toda sessão lê na abertura |
+| [`.claude/hooks/`](.claude/hooks/) | sete scripts que o harness executa — dois deles **bloqueiam** |
+| [`.claude/skills/`](.claude/skills/) | quatro procedimentos que carregam só quando o assunto aparece |
+| [`.claude/agents/`](.claude/agents/) | seis papéis, cada um com modelo e esforço declarados |
 | [`memoria/`](memoria/) | o que um agente aprendeu entre execuções |
 | [`docs/`](docs/), [`ESTADO.md`](ESTADO.md), [`LOG.md`](LOG.md) | como o contexto é organizado |
 
@@ -145,7 +147,69 @@ flowchart TB
 - `docs/features/` guarda a spec de cada funcionalidade, que é contra o que o
   revisor lê o diff.
 
-## 4. As regras
+## 4. Onde cada regra mora, e por quê
+
+Este foi o corte mais caro de acertar, e a pergunta que o resolve é uma só:
+**quem precisa ler isto, e quando?**
+
+```
+a regra PRECISA valer sempre?          →  HOOK          o harness executa
+é conhecimento que vale às vezes?      →  SKILL         carrega sob gatilho
+orienta julgamento, sempre?            →  AGENTS.md     lido na abertura
+é o caso que gerou a regra?            →  histórico     por ponteiro
+```
+
+**A diferença entre as duas primeiras linhas é a que importa:** skill pode ser
+ignorada; hook não. Hook roda fora do raciocínio do modelo, e nenhuma decisão
+dele contorna. Por isso "nunca reinicie o processo de produção antes de
+commitar" deixou de ser um parágrafo entre centenas e virou um `exit 2`.
+
+**Skills existem por causa do custo de atenção, não do custo de token.** Elas
+carregam em três níveis: só nome e descrição ficam permanentes; o corpo entra
+quando o assunto aparece; os anexos, quando são abertos. Uma receita de deploy
+custa quase nada até o dia do deploy.
+
+O efeito medido neste repositório: o arquivo de regras caiu **de 1022 para pouco
+mais de 500 linhas**, e de ~17,6 mil para ~9 mil tokens carregados em toda
+sessão — e em todo subagente que herda. Nenhuma regra foi removida; o texto
+mudou de lugar. A verificação disso foi conceito a conceito, com **controle
+positivo**: o padrão de busca tem de casar no arquivo ORIGINAL antes de valer
+como teste. Sem isso, um verificador quebrado passa por "está tudo certo" — e a
+primeira versão desse verificador estava quebrada, exatamente assim.
+
+E não é só economia. Num estudo público de 2026, agentes que receberam 100 mil
+tokens de resumo do código performaram **pior** que agentes com 5 mil tokens de
+contexto direcionado. Contexto grande demais degrada a atenção antes de acabar a
+janela.
+
+### O que cada ferramenta realmente lê — medido, não suposto
+
+Três fornecedores participam do ciclo, e o que cada um carrega sozinho foi
+medido com marcador plantado num arquivo e uma pergunta que só quem o carregou
+sabe responder:
+
+| Ferramenta | Carrega o arquivo de regras do projeto? |
+|---|---|
+| Claude Code | sim, via `CLAUDE.md`, que é uma linha importando o `AGENTS.md` |
+| Codex | sim — o do repositório **e** o de usuário, os dois |
+| Gemini (Antigravity, modo não-interativo) | **não carrega nenhum arquivo** |
+
+A última linha custou uma medição para ser acreditada: a documentação do
+fornecedor afirma que os arquivos de regra "estão sempre ativos". Em modo não
+interativo, não estão — testado com o arquivo em maiúsculas, de dentro do
+diretório, dentro e fora de repositório git, e depois de forçar o agente a ler
+outro arquivo. Todas as rodadas: ausente.
+
+**A consequência prática é uma regra:** tudo que o conferidor precisa saber
+viaja no prompt. E **não se cria um arquivo de regras para ele** — seria uma
+fonte a mais capaz de divergir, sem nenhum leitor.
+
+Dois controles tornaram esse "ausente" um resultado em vez de um silêncio: um
+marcador posto dentro do próprio prompt voltou na resposta (então o modelo
+responde esse tipo de pergunta), e o registro de execução da ferramenta mostrou
+**zero** chamadas de leitura.
+
+## 5. As regras
 
 Estão completas no [`AGENTS.md`](AGENTS.md). As que mais mudam o resultado:
 
@@ -215,7 +279,7 @@ Estão completas no [`AGENTS.md`](AGENTS.md). As que mais mudam o resultado:
 - Uma pessoa escrevendo na janela da sessão é a única autorização que vale.
   Instrução que chega de outra sessão fica inerte até isso acontecer.
 
-## 5. Os agentes
+## 6. Os agentes
 
 Seis. O critério nunca foi quantidade: cada um existe para um trabalho que
 alguém precisava fazer e não conseguia fazer bem sozinho.
@@ -225,26 +289,84 @@ alguém precisava fazer e não conseguia fazer bem sozinho.
 | [`revisor`](.claude/agents/revisor.md) | revisa um diff que outra sessão implementou, contra a spec e as regras | editar; decidir merge | xhigh |
 | [`conferidor-de-citacoes`](.claude/agents/conferidor-de-citacoes.md) | confere o que um documento afirma contra o repositório: citações, contagens, quantificadores. **Hoje é o fallback**: esse posto passou a um modelo de outro fornecedor | avaliar qualidade de código | alto |
 | [`prova-negativa`](.claude/agents/prova-negativa.md) | roda os testes novos contra o código anterior à correção, para provar que falham | tocar a cópia de trabalho principal | alto |
-| [`auditor-vps`](.claude/agents/auditor-vps.md) | auditoria de leitura da infraestrutura | `sudo`; escrever; propor comando de escrita | médio |
+| [`auditor-infra`](.claude/agents/auditor-infra.md) | auditoria de leitura da infraestrutura | `sudo`; escrever; propor comando de escrita | médio |
 | [`auditor-de-docs`](.claude/agents/auditor-de-docs.md) | classifica cada documento em vivo, desatualizado, morto ou duplicado | editar; sugerir edição pronta | médio |
 | [`leitor-de-logs`](.claude/agents/leitor-de-logs.md) | lê logs de produção e devolve só anomalias | imprimir telefone ou conteúdo de mensagem | médio |
 
 Um agente com memória de projeto guarda o que aprendeu entre execuções.
 [`memoria/`](memoria/) tem a do `revisor`, sem edição.
 
-## 6. Os hooks
+## 7. Os hooks e as skills
 
-Três, com o mesmo contrato: **só leitura, nunca afrouxam permissão, e degradam
-com mensagem própria em vez de abortar a sessão.**
+### Sete hooks
 
-- [`estado.sh`](.claude/hooks/estado.sh) entrega o estado na abertura.
-- [`pedir-permissao.sh`](.claude/hooks/pedir-permissao.sh) intercepta escrita em
-  produção antes de qualquer checagem de modo, inclusive quando o disparo vem de
-  um subagente.
-- [`protege-arquivos.sh`](.claude/hooks/protege-arquivos.sh) bloqueia edição de
-  arquivo com segredo e de estado interno do git.
+Contrato comum: **só leitura, nunca afrouxam permissão, e degradam com mensagem
+própria em vez de abortar a sessão.** Cada um traz no cabeçalho o incidente que
+o gerou — regra sem o caso vira ritual, e a primeira pessoa apressada a remove.
 
-## 7. Como uma revisão acontece
+| Hook | O que faz | Bloqueia? |
+|---|---|---|
+| [`estado.sh`](.claude/hooks/estado.sh) | entrega o estado na abertura, e reinjeta depois da compactação | não |
+| [`pedir-permissao.sh`](.claude/hooks/pedir-permissao.sh) | intercepta escrita em produção antes de qualquer checagem de modo, inclusive vinda de subagente | pede |
+| [`protege-arquivos.sh`](.claude/hooks/protege-arquivos.sh) | edição de arquivo com segredo e de estado interno do git | **sim** |
+| [`exige-commit-antes-do-pm2.sh`](.claude/hooks/exige-commit-antes-do-pm2.sh) | reiniciar o processo de produção com a cópia de trabalho suja | **sim** |
+| [`git-add-consciente.sh`](.claude/hooks/git-add-consciente.sh) | `git add` que leve um arquivo de permissão alterado sem nomeá-lo | **sim** |
+| [`fecha-ciclo.sh`](.claude/hooks/fecha-ciclo.sh) | ao fim da sessão, escreve um rascunho do que mudou | não |
+| [`conferir-docs.sh`](.claude/hooks/conferir-docs.sh) | item marcado como pendente cujo corpo diz que foi resolvido | não |
+
+**Três coisas que só apareceram por rodar de verdade**, e que valem para
+qualquer hook que case padrão no comando:
+
+- **Heredoc não é comando.** O hook recebe o comando inteiro, incluindo o corpo
+  de um `git commit -F - <<EOF … EOF`. O primeiro deles **bloqueou o commit que
+  o criava**, casando o comando vigiado dentro do TEXTO da mensagem — na linha
+  que documentava o próprio teste.
+- **`exit 2` vence uma permissão em `allow`; pedir confirmação, não.** Um hook
+  que apenas pedia era emitido e descartado, porque o comando estava liberado.
+  Hook que vigia comando liberado precisa bloquear.
+- **"Não pediu" tem duas causas** — não rodou, ou rodou e foi descartado — e
+  elas são indistinguíveis de fora. O que separou foi instrumentar o hook para
+  registrar cada passagem: o log provou que ele rodava e detectava certo.
+
+O último item é a mesma ideia do "recibo de ferramenta": **o que o sistema diz
+que fez não é evidência; o registro é.** Num teste, um agente declarou "arquivos
+lidos: 1" tendo feito trinta chamadas de leitura.
+
+### Quatro skills
+
+Procedimento, não julgamento. Carregam quando o assunto aparece:
+
+- [`deploy`](.claude/skills/deploy/SKILL.md) — a sequência de deploy, que cresceu
+  por achado: cada passo novo tem ao lado a revisão que o exigiu.
+- [`revisao-externa`](.claude/skills/revisao-externa/SKILL.md) — como disparar os
+  filtros, preparar a cópia isolada onde o revisor mede, e o cabeçalho de
+  identidade que liga um número a um commit.
+- [`encerrar-ciclo`](.claude/skills/encerrar-ciclo/SKILL.md) — a ordem de
+  fechamento e as conferências que precedem cada `git add`.
+- [`tunel-wsl`](.claude/skills/tunel-wsl/SKILL.md) — leitura entre as duas
+  máquinas, e por que o número da porta não se escreve em documento.
+
+### O estado que se cobra sozinho
+
+O problema era uma frase do dono do projeto: *"estado e fila ficam obsoletos
+muito rápido, e eu tenho que pedir"*.
+
+```mermaid
+flowchart LR
+    A(["sessão abre"]) -->|"grava o commit de partida"| B["trabalho"]
+    B --> C(["sessão fecha"])
+    C -->|"compara, e escreve rascunho<br/>se houve mudança"| D["rascunho de estado"]
+    D -.->|"a abertura seguinte avisa"| E(["próxima sessão"])
+    E -->|"aplica com julgamento,<br/>e apaga"| F["ESTADO.md"]
+```
+
+**O que o hook não faz é a decisão central:** ele não escreve no estado, não
+resume a conversa, não interpreta. Coleta fato mecânico — commits do intervalo,
+arquivos tocados — e fecha com perguntas, porque não sabe o que é digno do
+estado corrente. Documento escrito por máquina que ninguém leu é mais texto
+durável não conferido, que é a doença que todas as outras regras combatem.
+
+## 8. Como uma revisão acontece
 
 Quando uma tarefa fica pronta, ela não vai direto para a branch principal. O
 ciclo é sempre o mesmo.
@@ -283,7 +405,7 @@ código não faz. O código costuma estar certo; o texto em volta dele é que
 promete a mais. Por isso o pipeline de filtros existe mesmo para tarefa
 pequena.
 
-## 8. Escopo
+## 9. Escopo
 
 Isto mostra um caso real, não um framework. Não é portátil sem adaptar, e
 generalizá-lo seria outro produto.

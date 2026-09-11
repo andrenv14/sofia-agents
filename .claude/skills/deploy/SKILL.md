@@ -1,21 +1,21 @@
 ---
 name: deploy
-description: Sequência de deploy do sofia-bot na VPS. Use quando for commitar, aplicar migration, reiniciar o PM2 ou publicar mudança em produção.
+description: Sequência de deploy em produção. Use quando for commitar, aplicar migration, reiniciar o PM2 ou publicar mudança em produção.
 ---
 
-# Deploy do sofia-bot
+# Deploy em produção
 
 Ordem obrigatória. Não pule etapa.
 
 1. `git status` — confira que não há arquivo de outro escopo no stage.
    Se houver mudanças de escopos diferentes, faça commits separados.
 2. `npm run test:agent` — suíte tem que estar verde ANTES de commitar.
-   Por padrão a suíte roda no WSL; na VPS, só se for o caso.
+   Por padrão a suíte roda na máquina de desenvolvimento; em produção, só se for o caso.
 3. `git add` (explícito, evite `-A` sem conferir) e commit com mensagem
    que descreva o que realmente mudou.
 4. Só então aplique migration, se houver. Nunca migration antes do commit.
    Se o merge mudou `package-lock.json`: `npm ci` — COMPLETO, nunca
-   `--omit=dev`. A VPS mantém as devDependencies porque o Codex roda a suíte
+   `--omit=dev`. A máquina de produção mantém as devDependencies porque o Codex roda a suíte
    nela; `--omit=dev` quebra a revisão seguinte.
    **MIGRATION NÃO-ADITIVA muda esta ordem.** Esta sequência — migration no
    passo 4, restart no passo 6 — só é segura quando a migration é ADITIVA
@@ -61,7 +61,7 @@ Ordem obrigatória. Não pule etapa.
    recusa e **registra**. Entre os dois estados intermediários, passa-se pelo
    que grita. Confirmação de que o reload pegou:
    `ps -o pid,lstart,cmd -C nginx` mostra os workers com hora de início nova.
-6. `pm2 restart sofia-bot` — **dispensável apenas** quando o diff
+6. `pm2 restart <processo>` — **dispensável apenas** quando o diff
    comprovadamente não toca código que o processo do servidor carrega: doc,
    testes, `db/`, scripts de cron chamados direto pelo crontab, e o CSS
    gerado do passo 5. Nesse caso o deploy declara "sem restart: o diff não
@@ -70,7 +70,7 @@ Ordem obrigatória. Não pule etapa.
    rodando código velho em silêncio.
 7. `pm2 list` — confirme uptime reiniciado E contador de restart estável.
    Não assuma que subiu limpo.
-8. `pm2 logs sofia-bot --lines 30 --nostream` — confirme a linha
+8. `pm2 logs <processo> --lines 30 --nostream` — confirme a linha
    `[server] Sofia (multi-tenant) ouvindo na porta 3000` e que não há linha de
    erro nova depois dela. Aqui rodava `npm run test:agent` de novo, o que não
    provava nada do processo no ar: a suíte sobe a PRÓPRIA instância na porta

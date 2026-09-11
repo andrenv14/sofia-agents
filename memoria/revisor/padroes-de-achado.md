@@ -1,6 +1,6 @@
 ---
 name: padroes-de-achado
-description: Classes de achado que se repetem nas revisões de diff do sofia-bot — onde o bloqueador costuma estar (texto e raio de alcance, não lógica) e as duas medições que os revelam
+description: Classes de achado que se repetem nas revisões de diff do projeto — onde o bloqueador costuma estar (texto e raio de alcance, não lógica) e as duas medições que os revelam
 metadata:
   type: project
 ---
