@@ -162,6 +162,19 @@ Estão completas no [`AGENTS.md`](AGENTS.md). As que mais mudam o resultado:
   conhecida.
 - Citação de outro agente é premissa, não verificação. Abrir o trecho antes de
   decidir em cima dela.
+- **Medição verdadeira mais salto não verificado dá conclusão falsa com
+  aparência de rigor** — e é pior que palpite, porque vem com número ao lado. O
+  teste é uma pergunta: a medição responde à pergunta que você fez, ou a uma
+  pergunta vizinha? Quatro instâncias num único turno, em duas sessões: medir
+  que uma regra de segurança recusou um acesso e concluir que ela funciona,
+  quando quem recusou foi outra regra; medir que um filtro nega de fora e
+  concluir que ele delimita, quando na verdade não casa nada.
+- **Otimizar para o contador não é otimizar para o objetivo.** Onde existe um
+  detector, a tentação é fazer o número zerar em vez de fazer a coisa ficar
+  certa — e isso vale para o detector que você mesmo construiu. O detector
+  conta; quem julga é quem olha. Um verificador que conta divergências entre
+  documento e código pode ser zerado apagando a marcação em vez de corrigindo o
+  documento, e nenhum detector distingue as duas coisas.
 
 **Sobre texto que dura**
 
