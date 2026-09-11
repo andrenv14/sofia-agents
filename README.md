@@ -147,136 +147,93 @@ flowchart TB
 - `docs/features/` guarda a spec de cada funcionalidade, que é contra o que o
   revisor lê o diff.
 
-## 4. Onde cada regra mora, e por quê
+## 4. Onde cada regra mora
 
-Este foi o corte mais caro de acertar, e a pergunta que o resolve é uma só:
-**quem precisa ler isto, e quando?**
+Uma pergunta resolve: **quem precisa ler isto, e quando?**
 
-```
-a regra PRECISA valer sempre?          →  HOOK          o harness executa
-é conhecimento que vale às vezes?      →  SKILL         carrega sob gatilho
-orienta julgamento, sempre?            →  AGENTS.md     lido na abertura
-é o caso que gerou a regra?            →  histórico     por ponteiro
-```
+| | vai para | porque |
+|---|---|---|
+| precisa valer sempre | **hook** | o harness executa; o modelo não contorna |
+| vale às vezes | **skill** | carrega sob gatilho declarado |
+| orienta julgamento | **AGENTS.md** | lido na abertura |
+| é o caso que gerou a regra | **histórico** | entra por ponteiro |
 
-**A diferença entre as duas primeiras linhas é a que importa:** skill pode ser
-ignorada; hook não. Hook roda fora do raciocínio do modelo, e nenhuma decisão
-dele contorna. Por isso "nunca reinicie o processo de produção antes de
+Skill pode ser ignorada; hook não. Por isso "nunca reinicie produção antes de
 commitar" deixou de ser um parágrafo entre centenas e virou um `exit 2`.
 
-**Skills existem por causa do custo de atenção, não do custo de token.** Elas
-carregam em três níveis: só nome e descrição ficam permanentes; o corpo entra
-quando o assunto aparece; os anexos, quando são abertos. Uma receita de deploy
-custa quase nada até o dia do deploy.
+O efeito: o arquivo de regras caiu de 1022 para menos de 600 linhas, e de ~17,6
+mil para ~9 mil tokens por sessão. Nenhuma regra saiu — o texto mudou de lugar.
 
-O efeito medido neste repositório: o arquivo de regras caiu **de 1022 para pouco
-mais de 500 linhas**, e de ~17,6 mil para ~9 mil tokens carregados em toda
-sessão — e em todo subagente que herda. Nenhuma regra foi removida; o texto
-mudou de lugar. A verificação disso foi conceito a conceito, com **controle
-positivo**: o padrão de busca tem de casar no arquivo ORIGINAL antes de valer
-como teste. Sem isso, um verificador quebrado passa por "está tudo certo" — e a
-primeira versão desse verificador estava quebrada, exatamente assim.
+### O que cada ferramenta carrega sozinha — medido
 
-E não é só economia. Num estudo público de 2026, agentes que receberam 100 mil
-tokens de resumo do código performaram **pior** que agentes com 5 mil tokens de
-contexto direcionado. Contexto grande demais degrada a atenção antes de acabar a
-janela.
-
-### O que cada ferramenta realmente lê — medido, não suposto
-
-Três fornecedores participam do ciclo, e o que cada um carrega sozinho foi
-medido com marcador plantado num arquivo e uma pergunta que só quem o carregou
-sabe responder:
-
-| Ferramenta | Carrega o arquivo de regras do projeto? |
+| | lê o arquivo de regras do projeto? |
 |---|---|
-| Claude Code | sim, via `CLAUDE.md`, que é uma linha importando o `AGENTS.md` |
-| Codex | sim — o do repositório **e** o de usuário, os dois |
-| Gemini (Antigravity, modo não-interativo) | **não carrega nenhum arquivo** |
+| Claude Code | sim, via `CLAUDE.md` importando o `AGENTS.md` |
+| Codex | sim: o do repositório **e** o de usuário |
+| Gemini, modo não-interativo | **nenhum arquivo** |
 
-A última linha custou uma medição para ser acreditada: a documentação do
-fornecedor afirma que os arquivos de regra "estão sempre ativos". Em modo não
-interativo, não estão — testado com o arquivo em maiúsculas, de dentro do
-diretório, dentro e fora de repositório git, e depois de forçar o agente a ler
-outro arquivo. Todas as rodadas: ausente.
-
-**A consequência prática é uma regra:** tudo que o conferidor precisa saber
-viaja no prompt. E **não se cria um arquivo de regras para ele** — seria uma
-fonte a mais capaz de divergir, sem nenhum leitor.
-
-Dois controles tornaram esse "ausente" um resultado em vez de um silêncio: um
-marcador posto dentro do próprio prompt voltou na resposta (então o modelo
-responde esse tipo de pergunta), e o registro de execução da ferramenta mostrou
-**zero** chamadas de leitura.
+A última linha contraria a documentação do fornecedor. Foi medida com marcador
+plantado, controle de responsividade e registro de execução. **Consequência:**
+o que o conferidor precisa saber viaja no prompt, e não se cria arquivo de
+regras para ele — seria fonte a mais capaz de divergir, sem leitor.
 
 ## 5. As regras
 
-Estão completas no [`AGENTS.md`](AGENTS.md). As que mais mudam o resultado:
+Completas no [`AGENTS.md`](AGENTS.md). As que mais mudam o resultado:
 
-**Sobre verificar**
+**Verificar**
 
-- Duas coisas só contam como duas fontes se puderem discordar. Se uma deriva da
-  outra, é uma fonte contada duas vezes.
-- Medição que pode incluir o medidor precisa excluí-lo dentro do comando, não
-  na interpretação.
-- Verificação que passa observando nada precisa primeiro ser vista falhar.
-  "Nenhum registro criado" é satisfeito pelo acerto e também pelo sistema não
-  ter rodado.
-- Comando que devolve vazio só vale depois de ser visto achar alguma coisa
-  conhecida.
-- Citação de outro agente é premissa, não verificação. Abrir o trecho antes de
-  decidir em cima dela.
+- Duas coisas só contam como duas fontes **se puderem discordar**.
+- Medição que pode incluir o medidor exclui-o **dentro do comando**, não na
+  interpretação.
+- Verificação que passa observando nada precisa **primeiro ser vista falhar**.
+  "Nenhum registro criado" é satisfeito pelo acerto e pelo sistema não ter
+  rodado.
+- Citação de outro agente é **premissa, não verificação**.
 - **Medição verdadeira mais salto não verificado dá conclusão falsa com
-  aparência de rigor** — e é pior que palpite, porque vem com número ao lado. O
-  teste é uma pergunta: a medição responde à pergunta que você fez, ou a uma
-  pergunta vizinha? Quatro instâncias num único turno, em duas sessões: medir
-  que uma regra de segurança recusou um acesso e concluir que ela funciona,
-  quando quem recusou foi outra regra; medir que um filtro nega de fora e
-  concluir que ele delimita, quando na verdade não casa nada.
-- **Otimizar para o contador não é otimizar para o objetivo.** Onde existe um
-  detector, a tentação é fazer o número zerar em vez de fazer a coisa ficar
-  certa — e isso vale para o detector que você mesmo construiu. O detector
-  conta; quem julga é quem olha. Um verificador que conta divergências entre
-  documento e código pode ser zerado apagando a marcação em vez de corrigindo o
-  documento, e nenhum detector distingue as duas coisas.
+  aparência de rigor.** O teste: a medição responde à pergunta que você fez, ou
+  a uma vizinha?
+- **Otimizar para o contador não é otimizar para o objetivo.** Zerar um detector
+  apagando a marcação passa igual a corrigir o documento — nenhum detector
+  distingue.
 
-**Sobre texto que dura**
+**Texto que dura**
 
-- Citação durável aponta arquivo e nome de função. Número de linha envelhece em
+- Citação aponta **arquivo e nome de função**; número de linha envelhece em
   silêncio.
-- Contagem que descreve o código não entra em texto durável. Quando o número
-  for inevitável, o comando que o rederiva vai ao lado.
-- Quantificador ("sempre", "nunca", "todo") nomeia a exceção, ou vira uma regra
-  que se verifique sozinha.
-- Número normativo é o contrário: ele é a regra, e só muda de propósito. Antes
-  de podar um número, separar um do outro.
+- **Contagem não entra.** Quando o número for inevitável, o comando que o
+  rederiva vai ao lado — e roda-se o comando antes de colar.
+- Quantificador nomeia a exceção, ou vira regra que se verifica sozinha.
+- **Número normativo é o contrário:** ele é a regra, e só muda de propósito.
+  Antes de podar um número, separar um do outro.
+- Número traz **unidade e escopo** na mesma frase. "3 linhas de patch" expõe a
+  incompatibilidade; "3 ocorrências" a esconde.
 
-**Sobre decidir**
+**Decidir**
 
-- Aprovar um plano exige provar a peça central: aquela que, se estiver errada,
-  invalida o resto. Periférico conferido não substitui.
-- A terceira correção seguida que revela problema novo em outro lugar diz que o
-  desenho está errado. Parar e redesenhar.
+- Aprovar um plano exige provar a **peça central** — a que, se errada, invalida
+  o resto. Periférico conferido não substitui.
+- A **terceira** correção seguida que revela problema novo em outro lugar diz que
+  o desenho está errado.
 - Feature sem comprador não entra na fila.
-- Contorno inevitável nasce com data para morrer, escrita.
+- Contorno inevitável nasce com **data para morrer**, escrita.
 
-**Sobre o pipeline**
+**O pipeline**
 
-- Os filtros rodam em sequência, e existem porque quem escreve não relê o que
-  escreveu, relê o que quis dizer. Tarefa pequena não dispensa filtro.
-- O filtro mede o artefato real, não só o código. Se a mudança promete uma
-  propriedade de log ou de banco, o filtro gera o artefato e prova nele.
-- Medição que sustenta um merge carrega o commit e o estado da cópia de
-  trabalho no cabeçalho. Sem isso o número não se liga ao código que vai ao ar.
-- Correção de bug exige prova negativa: o teste novo tem de falhar contra o
-  código antigo, pelo motivo esperado.
+- Os filtros rodam **em sequência**, e existem porque quem escreve relê o que
+  quis dizer. Tarefa pequena não dispensa filtro.
+- O filtro mede o **artefato real**, não só o código.
+- Medição que sustenta merge carrega **commit e estado da cópia de trabalho** no
+  cabeçalho.
+- Correção de bug exige **prova negativa**: o teste novo falha contra o código
+  antigo, pelo motivo esperado.
+- A pergunta ao revisor tem de ser **decidível E satisfazível**.
 
-**Sobre permissão**
+**Permissão**
 
-- Escrita em produção pede confirmação de uma pessoa, sempre.
-- Um interpretador em `allow` anula o resto da lista, porque roda qualquer
-  coisa sem passar pelas outras regras.
-- Uma pessoa escrevendo na janela da sessão é a única autorização que vale.
+- Escrita em produção pede confirmação de uma pessoa, **sempre**.
+- **Um interpretador em `allow` anula o resto da lista.**
+- Uma pessoa autorizando **na janela da sessão** é a única autorização que vale.
   Instrução que chega de outra sessão fica inerte até isso acontecer.
 
 ## 6. Os agentes
@@ -298,73 +255,42 @@ Um agente com memória de projeto guarda o que aprendeu entre execuções.
 
 ## 7. Os hooks e as skills
 
-### Sete hooks
+Sete hooks. Contrato comum: **só leitura, nunca afrouxam permissão, e degradam
+com mensagem própria em vez de abortar a sessão.** Cada um traz no cabeçalho o
+incidente que o gerou.
 
-Contrato comum: **só leitura, nunca afrouxam permissão, e degradam com mensagem
-própria em vez de abortar a sessão.** Cada um traz no cabeçalho o incidente que
-o gerou — regra sem o caso vira ritual, e a primeira pessoa apressada a remove.
-
-| Hook | O que faz | Bloqueia? |
+| Hook | O que vigia | Bloqueia? |
 |---|---|---|
-| [`estado.sh`](.claude/hooks/estado.sh) | entrega o estado na abertura, e reinjeta depois da compactação | não |
-| [`pedir-permissao.sh`](.claude/hooks/pedir-permissao.sh) | intercepta escrita em produção antes de qualquer checagem de modo, inclusive vinda de subagente | pede |
-| [`protege-arquivos.sh`](.claude/hooks/protege-arquivos.sh) | edição de arquivo com segredo e de estado interno do git | **sim** |
-| [`exige-commit-antes-do-pm2.sh`](.claude/hooks/exige-commit-antes-do-pm2.sh) | reiniciar o processo de produção com a cópia de trabalho suja | **sim** |
-| [`git-add-consciente.sh`](.claude/hooks/git-add-consciente.sh) | `git add` que leve um arquivo de permissão alterado sem nomeá-lo | **sim** |
-| [`fecha-ciclo.sh`](.claude/hooks/fecha-ciclo.sh) | ao fim da sessão, escreve um rascunho do que mudou | não |
-| [`conferir-docs.sh`](.claude/hooks/conferir-docs.sh) | item marcado como pendente cujo corpo diz que foi resolvido | não |
+| [`estado.sh`](.claude/hooks/estado.sh) | entrega o estado na abertura e depois da compactação | — |
+| [`pedir-permissao.sh`](.claude/hooks/pedir-permissao.sh) | escrita em produção, inclusive vinda de subagente | pede |
+| [`protege-arquivos.sh`](.claude/hooks/protege-arquivos.sh) | arquivo com segredo, estado interno do git | **sim** |
+| [`exige-commit-antes-do-pm2.sh`](.claude/hooks/exige-commit-antes-do-pm2.sh) | reiniciar produção com a cópia suja | **sim** |
+| [`git-add-consciente.sh`](.claude/hooks/git-add-consciente.sh) | `git add` que leve arquivo de permissão sem nomeá-lo | **sim** |
+| [`fecha-ciclo.sh`](.claude/hooks/fecha-ciclo.sh) | escreve rascunho do que mudou ao fim da sessão | — |
+| [`conferir-docs.sh`](.claude/hooks/conferir-docs.sh) | item pendente cujo corpo diz que foi resolvido | — |
 
-**Três coisas que só apareceram por rodar de verdade**, e que valem para
-qualquer hook que case padrão no comando:
+**Três coisas que só apareceram por rodar de verdade:**
 
-- **Heredoc não é comando.** O hook recebe o comando inteiro, incluindo o corpo
-  de um `git commit -F - <<EOF … EOF`. O primeiro deles **bloqueou o commit que
-  o criava**, casando o comando vigiado dentro do TEXTO da mensagem — na linha
-  que documentava o próprio teste.
-- **`exit 2` vence uma permissão em `allow`; pedir confirmação, não.** Um hook
-  que apenas pedia era emitido e descartado, porque o comando estava liberado.
-  Hook que vigia comando liberado precisa bloquear.
-- **"Não pediu" tem duas causas** — não rodou, ou rodou e foi descartado — e
-  elas são indistinguíveis de fora. O que separou foi instrumentar o hook para
-  registrar cada passagem: o log provou que ele rodava e detectava certo.
+- **Heredoc não é comando.** O hook recebe o comando inteiro, incluindo o texto
+  de uma mensagem de commit. O primeiro deles bloqueou o commit que o criava.
+- **`exit 2` vence uma permissão em `allow`; pedir confirmação, não.**
+- **"Não pediu" tem duas causas** — não rodou, ou rodou e foi descartado. Só a
+  instrumentação as separa.
 
-O último item é a mesma ideia do "recibo de ferramenta": **o que o sistema diz
-que fez não é evidência; o registro é.** Num teste, um agente declarou "arquivos
-lidos: 1" tendo feito trinta chamadas de leitura.
-
-### Quatro skills
-
-Procedimento, não julgamento. Carregam quando o assunto aparece:
-
-- [`deploy`](.claude/skills/deploy/SKILL.md) — a sequência de deploy, que cresceu
-  por achado: cada passo novo tem ao lado a revisão que o exigiu.
-- [`revisao-externa`](.claude/skills/revisao-externa/SKILL.md) — como disparar os
-  filtros, preparar a cópia isolada onde o revisor mede, e o cabeçalho de
-  identidade que liga um número a um commit.
-- [`encerrar-ciclo`](.claude/skills/encerrar-ciclo/SKILL.md) — a ordem de
-  fechamento e as conferências que precedem cada `git add`.
-- [`tunel-wsl`](.claude/skills/tunel-wsl/SKILL.md) — leitura entre as duas
-  máquinas, e por que o número da porta não se escreve em documento.
+Quatro skills, carregadas sob gatilho: [`deploy`](.claude/skills/deploy/SKILL.md),
+[`revisao-externa`](.claude/skills/revisao-externa/SKILL.md),
+[`encerrar-ciclo`](.claude/skills/encerrar-ciclo/SKILL.md) e
+[`tunel-wsl`](.claude/skills/tunel-wsl/SKILL.md).
 
 ### O estado que se cobra sozinho
 
-O problema era uma frase do dono do projeto: *"estado e fila ficam obsoletos
-muito rápido, e eu tenho que pedir"*.
+A sessão abre gravando o commit de partida; ao fechar, compara e escreve um
+rascunho do que mudou; a abertura seguinte avisa que ele existe.
 
-```mermaid
-flowchart LR
-    A(["sessão abre"]) -->|"grava o commit de partida"| B["trabalho"]
-    B --> C(["sessão fecha"])
-    C -->|"compara, e escreve rascunho<br/>se houve mudança"| D["rascunho de estado"]
-    D -.->|"a abertura seguinte avisa"| E(["próxima sessão"])
-    E -->|"aplica com julgamento,<br/>e apaga"| F["ESTADO.md"]
-```
-
-**O que o hook não faz é a decisão central:** ele não escreve no estado, não
-resume a conversa, não interpreta. Coleta fato mecânico — commits do intervalo,
-arquivos tocados — e fecha com perguntas, porque não sabe o que é digno do
-estado corrente. Documento escrito por máquina que ninguém leu é mais texto
-durável não conferido, que é a doença que todas as outras regras combatem.
+**O hook não escreve no estado, não resume a conversa, não interpreta.** Coleta
+fato mecânico e fecha com perguntas, porque não sabe o que é digno do estado
+corrente. Documento escrito por máquina que ninguém leu é mais texto durável não
+conferido — a doença que todas as outras regras combatem.
 
 ## 8. Como uma revisão acontece
 
