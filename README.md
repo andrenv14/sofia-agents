@@ -76,7 +76,7 @@ Code:
 | Implementação | Opus 5 | xhigh |
 | Tarefa mecânica: merge, deploy, edição já decidida | Sonnet 5 | alto |
 | Decisão: arquitetura, spec, bug que não reproduz | Fable 5.1 | máximo |
-| Conferência de afirmações contra o código | `gemini-3.8-flash-high` | alto — **sempre** |
+| Conferência de afirmações contra o código | `gemini-3.8-flash-high` | alto |
 | Revisão independente, que decide o merge | `gpt-5.6-sol` | xhigh |
 
 Modelo se declara por **id exato**, e a linha do Gemini mostra por quê: nesse
