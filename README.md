@@ -17,7 +17,7 @@ a avaliação de comportamento do modelo ·
 | Onde | O que é |
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | as regras, que toda sessão lê na abertura |
-| [`.claude/hooks/`](.claude/hooks/) | sete scripts que o harness executa — dois deles **bloqueiam** |
+| [`.claude/hooks/`](.claude/hooks/) | o que o harness executa sozinho — os que saem com código 2 **bloqueiam**, e se acham com `grep -l 'exit 2' .claude/hooks/*` |
 | [`.claude/skills/`](.claude/skills/) | quatro procedimentos que carregam só quando o assunto aparece |
 | [`.claude/agents/`](.claude/agents/) | seis papéis, cada um com modelo e esforço declarados |
 | [`memoria/`](memoria/) | o que um agente aprendeu entre execuções |
@@ -159,7 +159,7 @@ Uma pergunta resolve: **quem precisa ler isto, e quando?**
 | é o caso que gerou a regra | **histórico** | entra por ponteiro |
 
 Skill pode ser ignorada; hook não. Por isso "nunca reinicie produção antes de
-commitar" deixou de ser um parágrafo entre centenas e virou um `exit 2`.
+commitar" é um `exit 2`, e não um parágrafo entre centenas.
 
 O efeito: o arquivo de regras caiu de 1022 para menos de 600 linhas, e de ~17,6
 mil para ~9 mil tokens por sessão. Nenhuma regra saiu — o texto mudou de lugar.
@@ -244,7 +244,7 @@ alguém precisava fazer e não conseguia fazer bem sozinho.
 | Agente | O que faz | O que nunca faz | Esforço |
 |---|---|---|---|
 | [`revisor`](.claude/agents/revisor.md) | revisa um diff que outra sessão implementou, contra a spec e as regras | editar; decidir merge | xhigh |
-| [`conferidor-de-citacoes`](.claude/agents/conferidor-de-citacoes.md) | confere o que um documento afirma contra o repositório: citações, contagens, quantificadores. **Hoje é o fallback**: esse posto passou a um modelo de outro fornecedor | avaliar qualidade de código | alto |
+| [`conferidor-de-citacoes`](.claude/agents/conferidor-de-citacoes.md) | confere o que um documento afirma contra o repositório: citações, contagens, quantificadores. **É o reserva** do conferidor de outro fornecedor, para o posto nunca ficar vago | avaliar qualidade de código | alto |
 | [`prova-negativa`](.claude/agents/prova-negativa.md) | roda os testes novos contra o código anterior à correção, para provar que falham | tocar a cópia de trabalho principal | alto |
 | [`auditor-infra`](.claude/agents/auditor-infra.md) | auditoria de leitura da infraestrutura | `sudo`; escrever; propor comando de escrita | médio |
 | [`auditor-de-docs`](.claude/agents/auditor-de-docs.md) | classifica cada documento em vivo, desatualizado, morto ou duplicado | editar; sugerir edição pronta | médio |
