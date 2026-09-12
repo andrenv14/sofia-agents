@@ -1,11 +1,17 @@
 # Como este projeto é construído
 
-Eu dirijo agentes de IA para escrever e operar um assistente de agendamento por
-WhatsApp que está em produção desde agosto de 2026, atendendo negócio real.
+Um assistente de agendamento por WhatsApp está em produção desde agosto de 2026,
+atendendo negócio real. Este repositório é o processo de engenharia que o mantém
+assim.
 
-Este repositório é o método: quem faz o quê, quem revisa quem, e as regras que
-toda sessão lê antes de tocar em qualquer coisa. Os arquivos são os que estão em
-uso, com os detalhes internos do projeto removidos.
+O código é escrito por agentes de IA, e isso sozinho não garante nada. O que
+decide se o resultado presta é o que existe em volta deles: uma segunda revisão
+que decide o merge e nunca implementa, provas que precisam ser vistas falhar
+antes de contar, e regras que o sistema aplica sozinho em vez de confiar em
+alguém lembrar delas.
+
+Os arquivos aqui são os que estão em uso, com os detalhes internos do projeto
+removidos.
 
 **Irmãos:** [`sofia-vitrine`](https://github.com/andrenv14/sofia-vitrine), a
 arquitetura do produto · [`sofia-eval`](https://github.com/andrenv14/sofia-eval),
